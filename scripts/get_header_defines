@@ -1,0 +1,6 @@
+#!/bin/bash
+
+monetdb_config_h_file=${1:-monetdb_config.h}
+#egrep  -- "^\s*(/\*)?\s*#\s*(define|undef)" $monetdb_config_h_file | sed 's/^\s*#define\s*//; s/\s.*//; s/(.*)$//;'
+egrep  -- "^\s*(/\*)?\s*#\s*(define|undef)" $monetdb_config_h_file |  sed -r 's/^\s*(\/\*)?\s*#\s*(define|undef)\s*//; s/^(\S*)\s.*$/\1/; s/^(\S*)\(.*$/\1/; '
+

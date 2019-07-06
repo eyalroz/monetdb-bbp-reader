@@ -1,0 +1,18 @@
+#pragma once
+#ifndef GDK_VERSION_SPECIFIC_FILENAMES_DEFINED
+#define GDK_VERSION_SPECIFIC_FILENAMES_DEFINED
+
+/*
+ * The MonetDB BBP reader library supports different versions 
+ * of the MonetDB source code; and since these can't really
+ * coexist, we select just one version at configuration time.
+ * For a given selection, the reader library code has to
+ * include GDK-related header files - tusing he correct
+ * version-specific path, provided here by the build system.
+ */
+
+#cmakedefine GDK_VERSION @GDK_VERSION@
+#cmakedefine GDK_H_FILE "@GDK_H_FILE@"
+#cmakedefine GDK_PRIVATE_H_FILE "@GDK_PRIVATE_H_FILE@"
+
+#endif /* GDK_VERSION_SPECIFIC_FILENAMES_DEFINED */

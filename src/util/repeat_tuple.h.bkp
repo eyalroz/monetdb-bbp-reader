@@ -1,0 +1,43 @@
+#pragma once
+#ifndef SRC_UTIL_REPEATE_TUPLE_H_
+#define SRC_UTIL_REPEATE_TUPLE_H_
+
+#include <tuple>
+#include <utility>
+#include <iostream>
+#include <initializer_list>
+
+
+namespace util {
+
+
+template <class F, size_t... Is>
+constexpr auto index_apply_impl(F f, std::index_sequence<Is...>) {
+    return f(std::integral_constant<size_t, Is> {}...);
+}
+
+template <size_t N, class F>
+constexpr auto index_apply(F f) {
+    return index_apply_impl(f, std::make_index_sequence<N>{});
+}
+
+
+template <class T, std::size_t N, class = std::make_index_sequence<N>>
+struct repeat_tuple_impl;
+
+namespace detail {
+template <std::size_t, class T>
+using typer = T;
+}
+
+template <class T, std::size_t N, std::size_t... Is>
+struct repeat_tuple_impl<T, N, std::index_sequence<Is...>> {
+	using type = std::tuple<detail::typer<Is, T>...>;
+};
+
+template <class T, std::size_t N>
+using repeat_tuple = typename repeat_tuple_impl<T, N>::type;
+
+} // namespace util
+
+#endif /* SRC_UTIL_REPEATE_TUPLE_H_ */

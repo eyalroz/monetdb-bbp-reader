@@ -1,0 +1,5 @@
+#!/bin/bash
+
+srcdir="src/from_monetdb"
+
+grep -h "#include" $(find "$srcdir" -name "*.c"; find "$srcdir" -name "*.h") | sed -r 's/\/\*.*//; s/#include ([^ ]*).*/\1/;' | grep "\"" | tr -d "\"" | grep -v "^ */[*/]" | sed -r 's/\s*$//;' | sort | uniq

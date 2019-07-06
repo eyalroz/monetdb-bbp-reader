@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# Lists all undefined references mentioned in the error messages of the linker.
+#
+# Written for GCC 5.x; almost certainly works with any recent GCC version,
+# and probably works with clang too
+
+make 2>&1 | grep undefined | cut -d\  -f2- | cut -d\` -f2 | tr -d "'" | sed -r 's/\s+$//; s/ .*$//;' | sort | uniq
