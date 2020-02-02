@@ -15,7 +15,7 @@
 
 #include "util/optional.hpp" // TODO: Try to have a simpler mechanism that this
 #ifndef GSL_SPAN_H
-#include "gsl/gsl-lite.h" // TODO: Perhaps switch to Microsoft GSL, and only include span?
+#include "gsl/gsl-lite.hpp" // TODO: Perhaps switch to Microsoft GSL, and only include span?
 #endif
 #include <string>
 #include <iterator>
