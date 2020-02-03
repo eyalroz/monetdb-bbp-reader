@@ -17,6 +17,8 @@
 #include <iostream>
 #endif
 
+namespace monetdb {
+
 namespace util {
 
 namespace detail {
@@ -149,4 +151,7 @@ bool is_readable(const filesystem::path& path)
 //	return (access(path.string.c_str(), R_OK) == 0);
 }
 
-} /* namespace util */
+} // namespace util
+
+} // namespace monetdb
+

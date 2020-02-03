@@ -15,7 +15,7 @@
 #include <numeric>
 #include <stdexcept>
 
-using util::optional;
+using monetdb::util::optional;
 using std::string;
 using std::flush;
 using std::endl;
@@ -41,35 +41,35 @@ using monetdb::sql_column_name;
 optional<std::string> translate_type_name(const char* monetdb_type_name)
 {
 	static const std::unordered_map<typename std::string, std::string> type_translation_for_printing = {
-		{ "void",      util::type_name<void>()          },
+		{ "void",      ::util::type_name<void>()          },
 	//	{ "bit",       "bit"                            },
-		{ "bte",       util::type_name<signed char>(),  }, // should this really be signed?
-		{ "sht",       util::type_name<int16_t>()       },
+		{ "bte",       ::util::type_name<signed char>(),  }, // should this really be signed?
+		{ "sht",       ::util::type_name<int16_t>()       },
 	//	{ "BAT",       "bat"                            },
-		{ "int",       util::type_name<int>()           },
+		{ "int",       ::util::type_name<int>()           },
 #ifdef MONET_OID32
-		{ "oid",       util::type_name<unsigned int>()  },
+		{ "oid",       ::util::type_name<unsigned int>()  },
 typedef unsigned int oid;
 #else
-		{ "oid",       util::type_name<size_t>()        },
+		{ "oid",       ::util::type_name<size_t>()        },
 #endif
 #if GDK_VERSION == 061033
 #if SIZEOF_WRD == SIZEOF_INT
-		{ "wrd",       util::type_name<int32_t>()       },
+		{ "wrd",       ::util::type_name<int32_t>()       },
 #else
-		{ "wrd",       util::type_name<int32_t>()       },
+		{ "wrd",       ::util::type_name<int32_t>()       },
 #endif
 #endif /* GDK_VERSION == 061033 */
 	// we always have long long in C++11
 		{ "ptr",      "pointer" },
-		{ "flt",       util::type_name<float>()         },
-		{ "dbl",       util::type_name<double>()        },
-		{ "lng",       util::type_name<long long int>() },
+		{ "flt",       ::util::type_name<float>()         },
+		{ "dbl",       ::util::type_name<double>()        },
+		{ "lng",       ::util::type_name<long long int>() },
 #ifdef HAVE_HGE
 #ifdef HAVE___INT128
-		{ "hge",       util::type_name<hge>()      },
+		{ "hge",       ::util::type_name<hge>()      },
 #else
-		{ "hge",       util::type_name<__int128_t>()    },
+		{ "hge",       ::util::type_name<__int128_t>()    },
 #endif
 #endif
 //		{ "str",       "string"                         },
@@ -144,7 +144,7 @@ void list_all_columns(
 std::pair<filesystem::path, optional<sql_column_name>> parse_cmdline(int argc, char** argv)
 {
 	std::string column_physical_name;
-	auto binary_name = util::leaf_of(filesystem::path(argv[0]));
+	auto binary_name = monetdb::util::leaf_of(filesystem::path(argv[0]));
 	if (not (argc == 2 or argc == 4)) {
 		die(std::string("Usage:\n") +
 			binary_name.string() + " DATABASE_ROOT_FOLDER [TABLE_NAME COLUMN_NAME]");
@@ -269,11 +269,12 @@ void list_column_fully(const column_proxy& column)
 	list_column_record("Tail", column.record());
 }
 
-
+namespace monetdb {
 namespace util {
 // This comes from dump.h ... ugly secret dependence, fix it
 void sanitize_to(std::ostream& os, char c, unsigned int field_width = 0);
 }
+} // namespace monetdb
 
 // TODO: Super-ugly code here, sorry
 namespace detail {
@@ -282,13 +283,13 @@ template <typename Iterator>
 inline void sanitize_to(std::ostream& os, Iterator begin, Iterator end, unsigned int field_width = 0)
 {
 	std::for_each(begin,end, [&os, field_width](typename std::add_const<decltype(*begin)>::type & e) {
-		util::sanitize_to(os, e, field_width);
+		monetdb::util::sanitize_to(os, e, field_width);
 	});
 }
 
 template <typename Iterator>
 inline std::string sanitize(Iterator begin, Iterator end, unsigned int field_width = 0) {
-    auto& oss = util::detail::get_ostringstream();
+    auto& oss = monetdb::util::detail::get_ostringstream();
 
     sanitize_to(oss, begin, end, field_width);
     return oss.str();
@@ -300,7 +301,7 @@ inline std::string sanitize(Iterator begin, Iterator end, unsigned int field_wid
 void dump_string_column(
 	const column_proxy       column,
 	const size_t             max_num_element_to_print,
-	util::dump_parameters_t  dump_params)
+	monetdb::util::dump_parameters_t  dump_params)
 {
 	enum { default_num_elements_to_print = 1024 };
 
@@ -310,10 +311,10 @@ void dump_string_column(
 
 	std::string tail_type_name;
 	switch(width) {
-	case 1: tail_type_name = util::type_name<uint8_t>();  break;
-	case 2: tail_type_name = util::type_name<uint16_t>(); break;
-	case 4: tail_type_name = util::type_name<uint32_t>();  break;
-	case 8: tail_type_name = util::type_name<uint64_t>(); break;
+	case 1: tail_type_name = ::util::type_name<uint8_t>();  break;
+	case 2: tail_type_name = ::util::type_name<uint16_t>(); break;
+	case 4: tail_type_name = ::util::type_name<uint32_t>();  break;
+	case 8: tail_type_name = ::util::type_name<uint64_t>(); break;
 	default:
 		throw invalid_argument("Dump requested for a string column "
 			"with unsupported tail width: " + std::to_string(width));
@@ -357,7 +358,7 @@ void dump_string_column(
 
 void dump_string_column(
 	const column_proxy     column,
-	util::dump_parameters_t  dump_params = {})
+	monetdb::util::dump_parameters_t  dump_params = {})
 {
 	dump_string_column(column, column.length(), dump_params);
 }
@@ -377,7 +378,7 @@ void dump_column(
 
 	auto tail_type = column.type();
 
-	util::dump_parameters_t dump_params;
+	monetdb::util::dump_parameters_t dump_params;
 	dump_params.subrange_to_print.set_length(
 		max_num_elements_to_print.value_or(default_num_elements_to_print)
 	);
@@ -397,7 +398,7 @@ void dump_column(
 		     << "which we can't translate into a type we know how to dump.\n";
 		return;
 	}
-	util::dump(cout, column.at(0), translated_tail_type_name.value(), count, "Tail data", dump_params);
+	monetdb::util::dump(cout, column.at(0), translated_tail_type_name.value(), count, "Tail data", dump_params);
 }
 
 void list_and_dump_all_columns_fully(buffer_pool& pool)

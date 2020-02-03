@@ -20,6 +20,8 @@
 #include <iterator>
 #include <algorithm>
 
+namespace monetdb {
+
 namespace util {
 
 /**
@@ -300,14 +302,14 @@ inline T read(std::istream& is)
 // TODO: What about const char* 's ?
 template <typename T>
 T from_string(const std::string& s){
-   auto& iss = ::util::detail::get_istringstream();
+   auto& iss = util::detail::get_istringstream();
    iss.str(s);
    return util::read<T>(iss);
 }
 
 template <typename T>
 void get_from_string(T& result, const std::string& s){
-   auto& iss = ::util::detail::get_istringstream();
+   auto& iss = util::detail::get_istringstream();
    iss.str(s);
    result = util::read<T>(iss);
 }
@@ -537,5 +539,8 @@ inline bool ends_with(const std::string& s, const std::string& suffix)
 inline std::string make_spaces(std::string::size_type num_spaces) { return std::string(num_spaces, ' '); }
 
 } // namespace util
+
+} // namespace monetdb
+
 
 #endif /* UTIL_STRING_HPP_ */

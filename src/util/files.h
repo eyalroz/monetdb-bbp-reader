@@ -28,6 +28,8 @@ namespace filesystem = boost::filesystem;
 #include <string>
 #include <vector>
 
+namespace monetdb {
+
 namespace util {
 
 optional<unsigned> get_terminal_width(std::ostream& os);
@@ -65,6 +67,9 @@ inline auto leaf_of(const filesystem::path& path) {
 #endif
 }
 
-} /* namespace util */
+} // namespace util
+
+} // namespace monetdb
+
 
 #endif /* SRC_UTIL_FILES_H_ */

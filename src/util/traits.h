@@ -6,6 +6,7 @@
  * Various type traits...
  */
 
+namespace monetdb {
 namespace util {
 
 namespace detail {
@@ -374,5 +375,6 @@ typename std::add_rvalue_reference<T>::type rt_val() noexcept
 }
 
 } // namespace util
+} // namespace monetdb
 
 #endif /* TRAITS_H_ */

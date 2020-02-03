@@ -12,6 +12,7 @@
 #include <sstream>
 #include <memory>
 
+namespace monetdb {
 namespace util {
 /*
 namespace detail {
@@ -194,6 +195,7 @@ inline std::string discard_template_parameters(const std::string& type_name)
 }
 
 
-} /* namespace util */
+} // namespace util
+} // namespace monetdb
 
 #endif /* UTIL_TYPE_NAME_HPP_ */

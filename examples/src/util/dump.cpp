@@ -25,6 +25,7 @@ using std::logic_error;
 using std::invalid_argument;
 #endif
 
+namespace monetdb {
 namespace util {
 
 enum { bits_per_byte = CHAR_BIT, bits_per_char = CHAR_BIT, log_bits_per_char = 3 };
@@ -516,7 +517,7 @@ static void print_header(
 		stream << dec;
 		stream << "Consists of " << params.data_length;
 		if (params.dump_bits) { stream << " bits in container"; }
-		stream << " elements of type \"" << type_name<E>()  << "\" (sized " << sizeof(E) <<  " bytes).";
+		stream << " elements of type \"" << util::type_name<E>()  << "\" (sized " << sizeof(E) <<  " bytes).";
 	}
 	if (params.extra_info.total_size_in_bytes) {
 		if (printed_anything) { stream << ' '; }
@@ -790,3 +791,4 @@ MAP(INSTANTIATE_DUMP_BOTH, int, unsigned int, long, char, unsigned char)
 }
 
 } // namespace util
+} // namespace monetdb

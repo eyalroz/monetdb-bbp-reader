@@ -8,7 +8,7 @@
 #include <utility> // for std::move
 #include "util/builtins.hpp"
 
-// TODO: Insert everything else in this file into the util namespace
+namespace monetdb {
 namespace util {
 
 template <typename T>
@@ -363,6 +363,7 @@ kahan_summation(ForwardIterator begin, ForwardIterator end)
     return sum;
 }
 
-} /* namespace util */
+} // namespace util
+} // namespace monetdb
 
 #endif /* SRC_UTIL_MATH_HPP_ */

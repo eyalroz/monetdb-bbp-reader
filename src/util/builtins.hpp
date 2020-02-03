@@ -5,8 +5,7 @@
 #include <cstdint>
 #include <utility> // for std::pair
 
-// Move this out of here, it should really not be CUDA-specific
-// (but should have its own small specific header, perhaps with some other related definitions
+namespace monetdb {
 namespace util {
 namespace builtins {
 
@@ -102,5 +101,6 @@ bool multiplication_will_overflow(LHS x, RHS y) { return __builtin_mul_overflow_
 
 } // namespace builtins
 } // namespace util
+} // namespace monetdb
 
 #endif /* SRC_UTIL_BUILTINS_HPP_ */

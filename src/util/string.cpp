@@ -9,6 +9,8 @@
 #include <utility>
 #include <locale>
 
+namespace monetdb {
+
 namespace util {
 
 const char* ordinal_suffix(int n)
@@ -206,5 +208,8 @@ MAP_BINARY(INSTANTIATE_FREESTANDING_FUNCTION, shorten_with_highest_prefix, ALL_I
 MAP_BINARY(INSTANTIATE_FREESTANDING_FUNCTION, value_and_shortened_form, ALL_INTEGRAL_TYPES_NO_DUPES)
 
 } // namespace util
+
+} // namespace monetdb
+
 
 

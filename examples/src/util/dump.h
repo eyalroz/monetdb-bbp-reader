@@ -7,6 +7,7 @@
 #include <functional>
 #include <string>
 
+namespace monetdb {
 namespace util {
 
 struct dump_parameters_t {
@@ -208,5 +209,6 @@ inline streamable_gadget_t dump(
 // what about "promotion for printing"?
 
 } // namespace util
+} // namespace monetdb
 
 #endif /* UTIL_DUMP_H_ */
