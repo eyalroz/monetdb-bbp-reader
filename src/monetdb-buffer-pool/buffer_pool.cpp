@@ -603,6 +603,9 @@ buffer_pool::find_column<column_name_kind::logical>(const column_name<column_nam
 template
 optional<buffer_pool::index_type>
 buffer_pool::find_column<column_name_kind::physical>(const column_name<column_name_kind::physical>& name) const;
+template
+optional<buffer_pool::index_type>
+buffer_pool::find_column<column_name_kind::sql>(const column_name<column_name_kind::sql>& name) const;
 
 } // namespace gdk
 
