@@ -48,6 +48,7 @@ include(CompileWithWarnings)
 # ---------------------
 
 find_package(Boost 1.56.0 QUIET COMPONENTS filesystem)
+set_property(TARGET Boost::filesystem APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS BOOST_SYSTEM_NO_DEPRECATED)
 
 # --------------------
 # Platform Feature checks
@@ -230,9 +231,8 @@ add_library(
 	src/util/files.cpp
 	src/util/string.cpp
 )
-target_link_libraries(monetdb-buffer-pool Boost::filesystem)
+target_link_libraries(monetdb-buffer-pool PUBLIC Boost::filesystem)
 # See http://stackoverflow.com/a/30877725/1593077 about the next line
-target_compile_definitions(monetdb-buffer-pool PUBLIC BOOST_SYSTEM_NO_DEPRECATED=1)
 
 set_property(TARGET monetdb-buffer-pool PROPERTY CXX_STANDARD 14)
 set_property(TARGET monetdb-buffer-pool PROPERTY CXX_STANDARD_REQUIRED ON)
