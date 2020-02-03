@@ -2,13 +2,9 @@
 # CMake modules and settings
 # ---------------------------
 
-cmake_minimum_required(VERSION 3.1)
-# Take modules from the top-level project modules dir first, then from the modules dir specific to this project
-set(CMAKE_MODULE_PATH
-	${CMAKE_MODULE_PATH}
-	${CMAKE_SOURCE_DIR}/cmake/Modules/
-	${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/
-)
+cmake_minimum_required(VERSION 3.5)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
 
 include(CheckIncludeFiles)
 include(CheckTypeSize)
@@ -27,26 +23,31 @@ endif()
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-	# This is the top-level project.
-	PROJECT(monetdb-bp-reader)
-endif()
+PROJECT(
+	monetdb-bp-reader
+	LANGUAGES C CXX
+        DESCRIPTION "stand-alone C++ library for reading the MonetDB persistence format"
+        HOMEPAGE_URL https://github.com/eyalroz/monetdb-bbp-reader
+        VERSION 0.4.0
+)
 
-# ----------------------------
-# General C/C++ build settings
-# ----------------------------
+# ---------------------
+# Project options
+# ---------------------
+
+set(GDK_VERSION "061041" CACHE STRING "Version identifier of the MonetDB low-level runtime library")
+set_property(CACHE GDK_VERSION PROPERTY STRINGS 061033 061037 061040 061041)
+message(STATUS "Using GDK library version ${GDK_VERSION}")
+
+option(BUILD_EXAMPLES "Build example programs" OFF)
 
 include(CompileWithWarnings)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF) # It seems MonetDB relies on the 128-bit integer extension
+# ---------------------
+# Package dependencies
+# ---------------------
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF) # It seems MonetDB relies on the 128-bit integer extension
-
-include_directories( "src/" )
+find_package(Boost 1.56.0 QUIET COMPONENTS filesystem)
 
 # -------------------- 
 # Platform Feature checks
@@ -55,7 +56,6 @@ include_directories( "src/" )
 test_big_endian(WORDS_BIGENDIAN)
 
 # Note that not all checkes are required for all versions of the GDK library.
-
 
 check_include_file( strings.h         HAVE_STRINGS_H        )
 check_include_file( dirent.h          HAVE_DIRENT_H         )
@@ -135,7 +135,6 @@ check_type_size( "__int128_t"      __INT128_T  )
 check_type_size( "__uint128_t"     __UINT128_T )
 check_type_size( "intptr_t"        INTPTR_T    )
 
-
 check_function_exists( strtof           HAVE_STRTOF        )
 check_function_exists( gettimeofday     HAVE_GETTIMEOFDAY  )
 check_function_exists( fork             HAVE_FORK          )
@@ -146,6 +145,8 @@ check_function_exists( posix_fadvise    HAVE_POSIX_FADVISE )
 check_function_exists( uname            HAVE_UNAME         )
 check_function_exists( setenv           HAVE_SETENV        )
 
+# This command puts the build platform's native directory separator
+# into the ${DIR_SEP} CMake variable
 file(TO_NATIVE_PATH "/" DIR_SEP)
 
 if (${HAVE_TIME_H} AND ${HAVE_SYS_TIME_H})
@@ -159,66 +160,48 @@ if (${HAVE_TIME_H} AND ${HAVE_SYS_TIME_H})
 	)
 endif()
 
-# -----
-# Boost 
-# -----
-find_package(Boost 1.56.0 QUIET COMPONENTS filesystem)
-include_directories( ${Boost_INCLUDE_DIR} )
-# See http://stackoverflow.com/a/30877725/1593077
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_SYSTEM_NO_DEPRECATED")
-# These next two lines should not be necessary, but I don't get the proper -L switch
-# without them... see http://stackoverflow.com/q/40208960/1593077 
-set (CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-L${Boost_LIBRARY_DIRS}")
-set (CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-L${Boost_LIBRARY_DIRS}")
 
 # -----------------------
 # Miscellaneous targets
 # -----------------------
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-	# This is the top-level project.
-	set_source_files_properties( tags PROPERTIES GENERATED true )
-	add_custom_target(tags
-		COMMAND ctags --langmap=c++:+.hpp -R ./
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-
-	add_custom_target(cclean COMMAND rm -r CMakeCache.txt CMakeFiles/ cmake_install.cmake)
-endif()
+# This is the top-level project.
+set_source_files_properties( tags PROPERTIES GENERATED true )
+add_custom_target(tags
+	COMMAND ctags --langmap=c++:+.hpp -R ./
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
 
 # -----------------------
-# Main target(s)
+# Generated config files
 # -----------------------
 
-include_directories( "src/" "${CMAKE_CURRENT_BINARY_DIR}/include" )
+# The following definitions are used within the generated GDK version selection header
+set(GDK_H_FILE                  "from-monetdb-sources/v${GDK_VERSION}/gdk/gdk.h")
+set(GDK_PRIVATE_H_FILE          "from-monetdb-sources/v${GDK_VERSION}/gdk/gdk_private.h")
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "lib")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
-
-
-set(GDK_VERSION "061041" CACHE STRING "Version identifier of the MonetDB low-level runtime library")
-set_property(CACHE GDK_VERSION PROPERTY STRINGS 061033 061037 061040 061041)
-message(STATUS "Using GDK library version ${GDK_VERSION}")
-
-set(MONETDB_CONFIG_H_TEMPLATE "from-monetdb-sources/monetdb_config.h.in")
-set(MONETDB_CONFIG_H_FILE "${CMAKE_CURRENT_BINARY_DIR}/include/monetdb_config.h")
-set(GDK_H_FILE            "from-monetdb-sources/v${GDK_VERSION}/gdk/gdk.h")
-set(GDK_PRIVATE_H_FILE    "from-monetdb-sources/v${GDK_VERSION}/gdk/gdk_private.h")
+set(GENERATED_INCLUDES_DIR      "${CMAKE_CURRENT_BINARY_DIR}/include")
+set(GDK_VERSION_SELECTION_FILE  "${GENERATED_INCLUDES_DIR}/gdk_version_selection.h")
 # The following configuration file is intended for non-MonetDB source files of this library
-configure_file(src/gdk_version_selection.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/gdk_version_selection.h @ONLY)
+configure_file(
+	"src/gdk_version_selection.h.in"
+	${GDK_VERSION_SELECTION_FILE}
+	@ONLY
+)
 
-set(SOURCES_FROM_MONETDB_ROOT src/monetdb-buffer-pool/from-monetdb-sources)
-set(VERSION_SPECIFIC_MONETDB_SOURCES ${SOURCES_FROM_MONETDB_ROOT}/v${GDK_VERSION})
+set(MONETDB_CONFIG_H_FILE     "${GENERATED_INCLUDES_DIR}/monetdb_config.h")
+set(SOURCES_FROM_MONETDB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/src/monetdb-buffer-pool/from-monetdb-sources")
 
 # The following configuration file is intended mainly for the MonetDB source files
 configure_file(
 	"${SOURCES_FROM_MONETDB_ROOT}/monetdb_config.h.in"
-	"${MONETDB_CONFIG_H_FILE}"
+	${MONETDB_CONFIG_H_FILE}
 	@ONLY
 )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GDK_VERSION_DEFINE} ${GDK_SELECTOR_DEFINE}")
 
+set(VERSION_SPECIFIC_MONETDB_SOURCES ${SOURCES_FROM_MONETDB_ROOT}/v${GDK_VERSION})
 set(GDK_SOURCE_DIR ${VERSION_SPECIFIC_MONETDB_SOURCES}/gdk)
 set(MONETDB_SOURCE_FILES
 	${VERSION_SPECIFIC_MONETDB_SOURCES}/monetdb5/modules/atoms/mtime.c
@@ -247,35 +230,30 @@ add_library(
 	src/util/files.cpp
 	src/util/string.cpp
 )
+target_link_libraries(monetdb-buffer-pool Boost::filesystem)
+# See http://stackoverflow.com/a/30877725/1593077 about the next line
+target_compile_definitions(monetdb-buffer-pool PUBLIC BOOST_SYSTEM_NO_DEPRECATED=1)
+
+set_property(TARGET monetdb-buffer-pool PROPERTY CXX_STANDARD 14)
+set_property(TARGET monetdb-buffer-pool PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET monetdb-buffer-pool PROPERTY CXX_EXTENSIONS OFF)
+
+set_property(TARGET monetdb-buffer-pool PROPERTY C_STANDARD 99)
+set_property(TARGET monetdb-buffer-pool PROPERTY C_STANDARD_REQUIRED ON)
+set_property(TARGET monetdb-buffer-pool PROPERTY C_EXTENSIONS OFF)
+
 target_include_directories(
 	monetdb-buffer-pool 
 	PUBLIC 
-	${SOURCES_FROM_MONETDB_ROOT}/v${GDK_VERSION}
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+        "$<BUILD_INTERFACE:${GENERATED_INCLUDES_DIR}>"
+        "$<BUILD_INTERFACE:${SOURCES_FROM_MONETDB_ROOT}/v${GDK_VERSION}>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+	# TODO: May need to explicitly include a subfolder of the CMake install includedir for the "vGDK_VERSION"
 )
 
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-		set(CXX_FILESYSTEM_LIBRARIES "stdc++fs")
-	endif()
-
-	add_executable(
-		simple
-		EXCLUDE_FROM_ALL
-		src/examples/simple.cpp
-	)
-	target_link_libraries(simple monetdb-buffer-pool ${CXX_FILESYSTEM_LIBRARIES} ${Boost_LIBRARIES})
-
-	add_executable(
-		monetdb-bp-reader
-		EXCLUDE_FROM_ALL
-		src/util/dump.cpp
-		src/examples/monetdb-bp-reader.cpp
-	)
-	target_link_libraries(monetdb-bp-reader monetdb-buffer-pool ${CXX_FILESYSTEM_LIBRARIES} ${Boost_LIBRARIES})
-
-	add_custom_target(examples)
-	add_dependencies(examples simple monetdb-bp-reader)
+if (BUILD_EXAMPLES)
+        add_subdirectory(examples)
 endif()
 
 # We don't do installation for now
