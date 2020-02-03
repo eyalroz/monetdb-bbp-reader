@@ -26,9 +26,9 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 PROJECT(
 	monetdb-bp-reader
 	LANGUAGES C CXX
-        DESCRIPTION "stand-alone C++ library for reading the MonetDB persistence format"
-        HOMEPAGE_URL https://github.com/eyalroz/monetdb-bbp-reader
-        VERSION 0.4.0
+	DESCRIPTION "stand-alone C++ library for reading the MonetDB persistence format"
+	HOMEPAGE_URL https://github.com/eyalroz/monetdb-bbp-reader
+	VERSION 0.4.0
 )
 
 # ---------------------
@@ -49,7 +49,7 @@ include(CompileWithWarnings)
 
 find_package(Boost 1.56.0 QUIET COMPONENTS filesystem)
 
-# -------------------- 
+# --------------------
 # Platform Feature checks
 # --------------------
 
@@ -140,7 +140,7 @@ check_function_exists( gettimeofday     HAVE_GETTIMEOFDAY  )
 check_function_exists( fork             HAVE_FORK          )
 check_function_exists( ftime            HAVE_FTIME         )
 check_function_exists( madvise          HAVE_MADVISE       )
-check_function_exists( posix_madvise    HAVE_POSIX_MADVISE ) 
+check_function_exists( posix_madvise    HAVE_POSIX_MADVISE )
 check_function_exists( posix_fadvise    HAVE_POSIX_FADVISE )
 check_function_exists( uname            HAVE_UNAME         )
 check_function_exists( setenv           HAVE_SETENV        )
@@ -217,7 +217,7 @@ set(MONETDB_SOURCE_FILES
 
 if (GDK_VERSION STRGREATER "061040")
 	list(
-		APPEND MONETDB_SOURCE_FILES 
+		APPEND MONETDB_SOURCE_FILES
 		${GDK_SOURCE_DIR}/gdk_string.c
 	)
 endif()
@@ -243,19 +243,69 @@ set_property(TARGET monetdb-buffer-pool PROPERTY C_STANDARD_REQUIRED ON)
 set_property(TARGET monetdb-buffer-pool PROPERTY C_EXTENSIONS OFF)
 
 target_include_directories(
-	monetdb-buffer-pool 
-	PUBLIC 
-        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
-        "$<BUILD_INTERFACE:${GENERATED_INCLUDES_DIR}>"
-        "$<BUILD_INTERFACE:${SOURCES_FROM_MONETDB_ROOT}/v${GDK_VERSION}>"
-        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+	monetdb-buffer-pool
+	PUBLIC
+	"$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>"
+	"$<BUILD_INTERFACE:${GENERATED_INCLUDES_DIR}>"
+	"$<BUILD_INTERFACE:${SOURCES_FROM_MONETDB_ROOT}/v${GDK_VERSION}>"
+	"$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 	# TODO: May need to explicitly include a subfolder of the CMake install includedir for the "vGDK_VERSION"
 )
 
 if (BUILD_EXAMPLES)
-        add_subdirectory(examples)
+	add_subdirectory(examples)
 endif()
 
-# We don't do installation for now
-# set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
+# -------------------------
+# Installation
+# -------------------------
+
+include(GNUInstallDirs)
+
+install(
+	TARGETS monetdb-buffer-pool
+	EXPORT monetdb-bp-reader_export
+	RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+	ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+	INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+install(
+	DIRECTORY src/
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+	FILES_MATCHING REGEX "\\.(h|hpp)$"
+	PATTERN "src/monetdb-buffer-pool/from-monetdb-sources" EXCLUDE
+	PATTERN "src/util" EXCLUDE
+)
+install(
+	FILES "src/util/optional.hpp"
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/util"
+)
+
+install(
+	FILES "${GDK_VERSION_SELECTION_FILE}" "${MONETDB_CONFIG_H_FILE}"
+	DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+install(
+	EXPORT monetdb-bp-reader_export
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/monetdb-bp-reader"
+	NAMESPACE "monetdb-bp-reader::"
+	FILE "monetdb-bp-reader-config.cmake"
+)
+
+include(CMakePackageConfigHelpers)
+
+write_basic_package_version_file(
+	"monetdb-bp-reader-config-version.cmake"
+	VERSION ${PROJECT_VERSION}
+	COMPATIBILITY SameMinorVersion
+)
+
+install(
+	FILES "${CMAKE_CURRENT_BINARY_DIR}/monetdb-bp-reader-config-version.cmake"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/monetdb-bp-reader"
+)
+
 
