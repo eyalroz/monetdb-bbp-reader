@@ -50,6 +50,9 @@ include(CompileWithWarnings)
 find_package(Boost 1.56.0 QUIET COMPONENTS filesystem)
 set_property(TARGET Boost::filesystem APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS BOOST_SYSTEM_NO_DEPRECATED)
 
+find_package(gsl-lite 0.32 REQUIRED)
+
+
 # --------------------
 # Platform Feature checks
 # --------------------
@@ -231,7 +234,7 @@ add_library(
 	src/util/files.cpp
 	src/util/string.cpp
 )
-target_link_libraries(monetdb-buffer-pool PUBLIC Boost::filesystem)
+target_link_libraries(monetdb-buffer-pool PUBLIC Boost::filesystem gsl::gsl-lite)
 # See http://stackoverflow.com/a/30877725/1593077 about the next line
 
 set_property(TARGET monetdb-buffer-pool PROPERTY CXX_STANDARD 14)
